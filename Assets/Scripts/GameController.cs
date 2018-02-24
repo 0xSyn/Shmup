@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class GameController : MonoBehaviour {
 
 	public GameObject hazard;
+    public GameObject enemy;
     public GameObject player;
     public GameObject skycam;
     public GameObject cam;
@@ -58,11 +59,15 @@ public class GameController : MonoBehaviour {
 	                  (Random.Range(-spawnValues.x,spawnValues.x),
 	                  spawnValues.y,
 	                  spawnValues.z);
-	            Quaternion spawnRotation = Quaternion.identity; 
-	            //no rotation aside from inherent)
-
-	            Instantiate(hazard, spawnPosition, spawnRotation);
-	            yield return new WaitForSeconds(spawnWait);
+	            Quaternion spawnRotation = Quaternion.identity;
+                //no rotation aside from inherent)
+                float rnd = Random.Range(0f, 1f);
+                if (rnd<=.9) {
+                    Instantiate(hazard, spawnPosition, spawnRotation);
+                } else if (mode!=1 && rnd>.9) {
+                    Instantiate(enemy, spawnPosition, spawnRotation);
+                }
+                yield return new WaitForSeconds(spawnWait);
 	        }
 	        yield return new WaitForSeconds(waveWait);
             
