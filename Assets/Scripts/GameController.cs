@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
-public class GameController : MonoBehaviour {
+public class GameController : NetworkBehaviour {
 
 	public GameObject hazard;
     public GameObject enemy;
@@ -54,7 +55,7 @@ public class GameController : MonoBehaviour {
 	    while(true) {
             SetWave();
             for (int i=0;i<hazardCount;i++) {
-                
+                Debug.Log("spawn");
                 Vector3 spawnPosition = new Vector3 
 	                  (Random.Range(-spawnValues.x,spawnValues.x),
 	                  spawnValues.y,
@@ -63,9 +64,13 @@ public class GameController : MonoBehaviour {
                 //no rotation aside from inherent)
                 float rnd = Random.Range(0f, 1f);
                 if (rnd<=.9) {
-                    Instantiate(hazard, spawnPosition, spawnRotation);
+                   var h= Instantiate(hazard, spawnPosition, spawnRotation);
+                    //NetworkServer.Spawn(h);
+                    CmdServerSpawner(h);
                 } else if (mode!=1 && rnd>.9) {
-                    Instantiate(enemy, spawnPosition, spawnRotation);
+
+                    var h=Instantiate(enemy, spawnPosition, spawnRotation);
+                    CmdServerSpawner(h);
                 }
                 yield return new WaitForSeconds(spawnWait);
 	        }
@@ -80,6 +85,11 @@ public class GameController : MonoBehaviour {
 	    }
 
 	}
+
+    [Command]
+    void CmdServerSpawner(GameObject h) {
+        NetworkServer.Spawn(h);
+    }
 
     public void SetWave() {
         switch (waveNum) {
@@ -111,6 +121,7 @@ public class GameController : MonoBehaviour {
         
         //mode = Random.Range(0, 3);
         //mode = 0;
+        player=GameObject.FindGameObjectWithTag("player");
         player.GetComponent<PlayerController>().mode = mode;
         switch (mode) {
             case 0:

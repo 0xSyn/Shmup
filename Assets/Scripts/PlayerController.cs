@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
 
 [System.Serializable]
@@ -8,7 +9,7 @@ public class Boundary {
 	public float xMin, xMax, zMin, zMax;
 }
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
 	private Rigidbody rb;
 	public float speed;
@@ -29,19 +30,33 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void Update() {
-		if(Input.GetAxis("RightTrigger")!=0 && Time.time > nextFire) {
+	    if (!isLocalPlayer) {
+	        return;
+	    }
+        if (Input.GetAxis("RightTrigger")!=0 && Time.time > nextFire) {
 			nextFire = Time.time + fireRate;
-
-			//Instantiate(shot, shotSpawn.position, new Quaternion(1,yaw,0,1));
-            Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
-            AudioSource audio = GetComponent<AudioSource>();
-			audio.Play();
+            Debug.Log("Fire!!");
+            CmdFire();
+			
 
 		}
 	}
 
-	void FixedUpdate () {
-		float moveHorizontal = Input.GetAxis("Horizontal");
+    [Command]
+    void CmdFire() {
+        //Instantiate(shot, shotSpawn.position, new Quaternion(1,yaw,0,1));
+        var s=Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
+        NetworkServer.Spawn(s);
+        AudioSource audio = GetComponent<AudioSource>();
+        audio.Play();
+    }
+
+
+    void FixedUpdate () {
+	    if (!isLocalPlayer) {
+	        return;
+	    }
+        float moveHorizontal = Input.GetAxis("Horizontal");
 		float moveVertical = Input.GetAxis("Vertical");
         yaw = Input.GetAxis("RightAnalogX");
         yaw2 = Input.GetAxis("RightAnalogY");
